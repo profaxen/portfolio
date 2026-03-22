@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        display: ['Space Grotesk', 'sans-serif'],
+        sans: ['Sora', 'sans-serif'],
+        display: ['Outfit', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
@@ -27,18 +27,34 @@ export default {
         'glow-blue': '0 0 20px rgba(59,130,246,0.4)',
         'glow-cyan': '0 0 20px rgba(6,182,212,0.4)',
         'glass': '0 4px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+        'glow-lg': '0 0 40px rgba(124,58,237,0.3), 0 0 80px rgba(59,130,246,0.1)',
       },
       animation: {
         'float': 'float 3s ease-in-out infinite',
+        'float-slow': 'float 6s ease-in-out infinite',
         'pulse-slow': 'pulse 4s ease-in-out infinite',
         'bounce-slow': 'bounce 2s ease-in-out infinite',
+        'shimmer': 'shimmer 3s linear infinite',
+        'glow-pulse': 'glowPulse 3s ease-in-out infinite',
       },
       keyframes: {
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-12px)' },
-        }
-      }
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% center' },
+          '100%': { backgroundPosition: '200% center' },
+        },
+        glowPulse: {
+          '0%, 100%': { boxShadow: '0 0 20px rgba(124,58,237,0.2)' },
+          '50%': { boxShadow: '0 0 40px rgba(124,58,237,0.4), 0 0 60px rgba(59,130,246,0.15)' },
+        },
+      },
+      transitionTimingFunction: {
+        'smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
+        'bounce-custom': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      },
     },
   },
   plugins: [],

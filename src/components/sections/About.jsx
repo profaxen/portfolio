@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { motion, useInView, useAnimation } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import SectionHeading from '../ui/SectionHeading'
 import { STATS, PERSONAL } from '../../constants'
@@ -10,12 +10,13 @@ function CountUp({ to, suffix = '', isInView }) {
   useEffect(() => {
     if (!isInView) return
     const isDecimal = to % 1 !== 0
-    const duration = 1800
+    const duration = 2200
     const start = Date.now()
     const timer = setInterval(() => {
       const elapsed = Date.now() - start
       const progress = Math.min(elapsed / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
+      // Smooth exponential ease out
+      const eased = 1 - Math.pow(1 - progress, 4)
       const current = isDecimal
         ? (eased * to).toFixed(1)
         : Math.floor(eased * to)
@@ -32,24 +33,39 @@ function CountUp({ to, suffix = '', isInView }) {
   )
 }
 
-const slideLeft = {
-  hidden: { opacity: 0, x: -40 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+const smoothReveal = {
+  hidden: { opacity: 0, x: -50, filter: 'blur(8px)' },
+  visible: {
+    opacity: 1,
+    x: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+  },
 }
 
-const slideRight = {
-  hidden: { opacity: 0, x: 40 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+const smoothRevealRight = {
+  hidden: { opacity: 0, x: 50, filter: 'blur(8px)' },
+  visible: {
+    opacity: 1,
+    x: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+  },
 }
 
 const stagger = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
+  visible: { transition: { staggerChildren: 0.12, delayChildren: 0.2 } },
 }
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+  hidden: { opacity: 0, y: 30, filter: 'blur(6px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+  },
 }
 
 export default function About() {
@@ -74,7 +90,7 @@ export default function About() {
           {/* Left: text */}
           <motion.div
             ref={leftRef}
-            variants={slideLeft}
+            variants={smoothReveal}
             initial="hidden"
             animate={leftInView ? 'visible' : 'hidden'}
           >
@@ -113,6 +129,12 @@ export default function About() {
                     background: 'rgba(255,255,255,0.04)',
                     border: '1px solid rgba(255,255,255,0.08)',
                   }}
+                  whileHover={{
+                    scale: 1.03,
+                    borderColor: 'rgba(124,58,237,0.3)',
+                    background: 'rgba(124,58,237,0.05)',
+                    transition: { type: 'spring', stiffness: 400, damping: 15 },
+                  }}
                 >
                   <span className="text-xl">{icon}</span>
                   <div>
@@ -127,7 +149,7 @@ export default function About() {
           {/* Right: stats grid */}
           <motion.div
             ref={rightRef}
-            variants={slideRight}
+            variants={smoothRevealRight}
             initial="hidden"
             animate={rightInView ? 'visible' : 'hidden'}
             className="grid grid-cols-2 gap-4"
@@ -135,21 +157,38 @@ export default function About() {
             {STATS.map(({ value, suffix, label }, i) => (
               <motion.div
                 key={label}
-                className="rounded-2xl p-6 text-center"
+                className="rounded-2xl p-6 text-center relative overflow-hidden group"
                 style={{
                   background: 'rgba(255, 255, 255, 0.03)',
                   border: '1px solid rgba(255, 255, 255, 0.08)',
                   backdropFilter: 'blur(12px)',
                 }}
-                whileHover={{ y: -4, borderColor: 'rgba(124,58,237,0.4)', transition: { duration: 0.2 } }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={rightInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: i * 0.1 + 0.2 }}
+                whileHover={{
+                  y: -6,
+                  scale: 1.02,
+                  borderColor: 'rgba(124,58,237,0.4)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.4), 0 0 20px rgba(124,58,237,0.15)',
+                  transition: { type: 'spring', stiffness: 300, damping: 20 },
+                }}
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                animate={rightInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                transition={{
+                  delay: i * 0.12 + 0.2,
+                  duration: 0.6,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
               >
-                <p
-                  className="font-display text-4xl font-bold mb-2"
+                {/* Subtle gradient bg on hover */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{
-                    background: 'linear-gradient(135deg, #7C3AED, #06B6D4)',
+                    background: 'radial-gradient(circle at center, rgba(124,58,237,0.08) 0%, transparent 70%)',
+                  }}
+                />
+                <p
+                  className="font-display text-4xl font-extrabold mb-2 relative z-10"
+                  style={{
+                    background: 'linear-gradient(135deg, #7C3AED, #3B82F6, #06B6D4)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -157,7 +196,7 @@ export default function About() {
                 >
                   <CountUp to={value} suffix={suffix} isInView={rightInView} />
                 </p>
-                <p className="text-slate-400 text-sm">{label}</p>
+                <p className="text-slate-400 text-sm relative z-10">{label}</p>
               </motion.div>
             ))}
           </motion.div>

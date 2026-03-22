@@ -7,17 +7,17 @@ import { PERSONAL } from '../../constants'
 const inputBase = {
   background: 'rgba(255,255,255,0.04)',
   border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: '10px',
+  borderRadius: '12px',
   color: '#f1f5f9',
   outline: 'none',
-  transition: 'all 200ms ease',
+  transition: 'all 300ms cubic-bezier(0.16, 1, 0.3, 1)',
   width: '100%',
-  fontFamily: 'Inter, sans-serif',
+  fontFamily: 'Sora, sans-serif',
 }
 
 const inputFocus = {
   border: '1px solid rgba(124,58,237,0.6)',
-  boxShadow: '0 0 0 3px rgba(124,58,237,0.15)',
+  boxShadow: '0 0 0 4px rgba(124,58,237,0.1), 0 0 20px rgba(124,58,237,0.05)',
   background: 'rgba(124,58,237,0.06)',
 }
 
@@ -27,18 +27,18 @@ function FormInput({ label, id, type = 'text', value, onChange, error, placehold
   const style = {
     ...inputBase,
     ...(focused ? inputFocus : {}),
-    padding: isTextarea ? '12px 16px' : '12px 16px',
+    padding: '14px 18px',
     resize: isTextarea ? 'vertical' : undefined,
-    minHeight: isTextarea ? '140px' : undefined,
+    minHeight: isTextarea ? '150px' : undefined,
     fontSize: '14px',
   }
 
   return (
-    <div>
+    <div className="relative">
       <label
         htmlFor={id}
-        className="block text-sm font-medium mb-1.5"
-        style={{ color: '#94a3b8' }}
+        className="block text-sm font-medium mb-2 transition-colors duration-300"
+        style={{ color: focused ? '#c4b5fd' : '#94a3b8' }}
       >
         {label}
       </label>
@@ -64,11 +64,20 @@ function FormInput({ label, id, type = 'text', value, onChange, error, placehold
           style={style}
         />
       )}
-      {error && (
-        <p className="text-xs mt-1" style={{ color: '#f87171' }}>
-          {error}
-        </p>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            className="text-xs mt-1.5"
+            style={{ color: '#f87171' }}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.2 }}
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -135,8 +144,8 @@ export default function Contact() {
       className="py-24 relative z-10 overflow-hidden"
       style={{ background: '#0a0a1a' }}
     >
-      {/* Background orb */}
-      <div
+      {/* Animated background orb */}
+      <motion.div
         className="absolute pointer-events-none"
         style={{
           width: 500,
@@ -148,6 +157,8 @@ export default function Contact() {
           transform: 'translate(-50%, -50%)',
           filter: 'blur(60px)',
         }}
+        animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
+        transition={{ duration: 5, ease: 'easeInOut', repeat: Infinity }}
       />
 
       <div className="max-w-6xl mx-auto px-6 relative" ref={ref}>
@@ -161,9 +172,9 @@ export default function Contact() {
           {/* Left: info */}
           <motion.div
             className="lg:col-span-2 flex flex-col gap-6"
-            initial={{ opacity: 0, x: -40 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
+            initial={{ opacity: 0, x: -50, filter: 'blur(8px)' }}
+            animate={isInView ? { opacity: 1, x: 0, filter: 'blur(0px)' } : {}}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
             <p className="text-slate-400 leading-relaxed text-sm">
               I'm currently open to opportunities. If you have a project in mind or want to explore
@@ -171,9 +182,10 @@ export default function Contact() {
             </p>
 
             <div className="flex flex-col gap-4">
-              <a
+              <motion.a
                 href={`mailto:${PERSONAL.email}`}
-                className="flex items-center gap-3 text-sm text-slate-300 hover:text-accent-purple transition-colors duration-200"
+                className="flex items-center gap-3 text-sm text-slate-300 hover:text-accent-purple transition-colors duration-300"
+                whileHover={{ x: 4, transition: { type: 'spring', stiffness: 400, damping: 15 } }}
               >
                 <div
                   className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -182,7 +194,7 @@ export default function Contact() {
                   <Mail size={15} className="text-accent-purple" />
                 </div>
                 {PERSONAL.email}
-              </a>
+              </motion.a>
               <div className="flex items-center gap-3 text-sm text-slate-400">
                 <div
                   className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -204,7 +216,7 @@ export default function Contact() {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-slate-300 transition-all duration-200"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-slate-300 transition-all duration-300"
                   style={{
                     background: 'rgba(255,255,255,0.03)',
                     border: '1px solid rgba(255,255,255,0.08)',
@@ -213,8 +225,9 @@ export default function Contact() {
                     background: 'rgba(124,58,237,0.08)',
                     borderColor: 'rgba(124,58,237,0.3)',
                     color: '#f1f5f9',
-                    x: 4,
-                    transition: { duration: 0.2 },
+                    x: 6,
+                    boxShadow: '0 0 15px rgba(124,58,237,0.1)',
+                    transition: { type: 'spring', stiffness: 400, damping: 15 },
                   }}
                 >
                   <Icon size={16} className="text-accent-purple" />
@@ -227,33 +240,43 @@ export default function Contact() {
           {/* Right: form */}
           <motion.div
             className="lg:col-span-3"
-            initial={{ opacity: 0, x: 40 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
+            initial={{ opacity: 0, x: 50, filter: 'blur(8px)' }}
+            animate={isInView ? { opacity: 1, x: 0, filter: 'blur(0px)' } : {}}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
           >
             <div
-              className="rounded-2xl p-8"
+              className="rounded-2xl p-8 relative overflow-hidden"
               style={{
                 background: 'rgba(255,255,255,0.03)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 backdropFilter: 'blur(12px)',
               }}
             >
+              {/* Subtle breathing glow */}
+              <motion.div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle at 50% 0%, rgba(124,58,237,0.06) 0%, transparent 60%)',
+                }}
+                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 4, ease: 'easeInOut', repeat: Infinity }}
+              />
+
               <AnimatePresence mode="wait">
                 {success ? (
                   <motion.div
                     key="success"
-                    className="flex flex-col items-center justify-center py-12 text-center"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center py-12 text-center relative z-10"
+                    initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
+                    animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
                     exit={{ opacity: 0 }}
                     transition={{ type: 'spring', stiffness: 200, damping: 20 }}
                   >
                     <motion.div
                       className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
                       style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.4)' }}
-                      animate={{ scale: [0.8, 1.1, 1] }}
-                      transition={{ duration: 0.4 }}
+                      animate={{ scale: [0.8, 1.15, 1], rotate: [0, 10, 0] }}
+                      transition={{ duration: 0.6 }}
                     >
                       <CheckCircle size={32} style={{ color: '#10B981' }} />
                     </motion.div>
@@ -266,7 +289,8 @@ export default function Contact() {
                     <motion.button
                       onClick={() => setSuccess(false)}
                       className="mt-6 text-sm text-accent-purple hover:underline"
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
                       Send another message
                     </motion.button>
@@ -275,7 +299,7 @@ export default function Contact() {
                   <motion.form
                     key="form"
                     onSubmit={handleSubmit}
-                    className="flex flex-col gap-5"
+                    className="flex flex-col gap-5 relative z-10"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -313,26 +337,42 @@ export default function Contact() {
                     <motion.button
                       type="submit"
                       disabled={loading}
-                      className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl text-white font-semibold text-sm transition-all duration-200 disabled:opacity-70"
+                      className="flex items-center justify-center gap-2 w-full py-4 rounded-xl text-white font-semibold text-sm disabled:opacity-70 relative overflow-hidden"
                       style={{ background: 'linear-gradient(135deg, #7C3AED, #3B82F6)' }}
-                      whileHover={!loading ? { scale: 1.01, brightness: 1.1, boxShadow: '0 0 24px rgba(124,58,237,0.4)' } : {}}
+                      whileHover={!loading ? {
+                        scale: 1.02,
+                        boxShadow: '0 0 30px rgba(124,58,237,0.4), 0 0 60px rgba(124,58,237,0.15)',
+                      } : {}}
                       whileTap={!loading ? { scale: 0.98 } : {}}
+                      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                     >
-                      {loading ? (
-                        <>
-                          <motion.div
-                            className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white"
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                          />
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          <Send size={15} />
-                          Send Message
-                        </>
-                      )}
+                      {/* Shimmer overlay on hover */}
+                      <motion.div
+                        className="absolute inset-0"
+                        style={{
+                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
+                          backgroundSize: '200% 100%',
+                        }}
+                        animate={{ backgroundPosition: ['-200% 0', '200% 0'] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                      />
+                      <span className="relative z-10 flex items-center gap-2">
+                        {loading ? (
+                          <>
+                            <motion.div
+                              className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white"
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+                            />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Send size={15} />
+                            Send Message
+                          </>
+                        )}
+                      </span>
                     </motion.button>
                   </motion.form>
                 )}

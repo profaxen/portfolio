@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { motion, useInView, AnimatePresence, useMotionValue, useSpring } from 'framer-motion'
 import { Github, ExternalLink, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import SectionHeading from '../ui/SectionHeading'
 import Tag from '../ui/Tag'
@@ -38,10 +38,10 @@ function ImageSlider({ images }) {
           alt="Project screenshot"
           className="w-full h-full object-contain rounded-xl"
           style={{ background: '#0d0d1a' }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           loading="lazy"
         />
       </AnimatePresence>
@@ -50,7 +50,7 @@ function ImageSlider({ images }) {
         <>
           <button
             onClick={(e) => { e.stopPropagation(); prev() }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
             style={{
               background: 'rgba(0,0,0,0.6)',
               backdropFilter: 'blur(8px)',
@@ -61,7 +61,7 @@ function ImageSlider({ images }) {
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); next() }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
             style={{
               background: 'rgba(0,0,0,0.6)',
               backdropFilter: 'blur(8px)',
@@ -77,10 +77,12 @@ function ImageSlider({ images }) {
               <button
                 key={i}
                 onClick={(e) => { e.stopPropagation(); setCurrent(i) }}
-                className="w-2 h-2 rounded-full transition-all duration-200"
+                className="rounded-full transition-all duration-300"
                 style={{
+                  width: i === current ? '20px' : '8px',
+                  height: '8px',
                   background: i === current ? '#7C3AED' : 'rgba(255,255,255,0.3)',
-                  boxShadow: i === current ? '0 0 6px rgba(124,58,237,0.6)' : 'none',
+                  boxShadow: i === current ? '0 0 10px rgba(124,58,237,0.6)' : 'none',
                 }}
               />
             ))}
@@ -88,7 +90,6 @@ function ImageSlider({ images }) {
         </>
       )}
 
-      {/* Gradient overlay at bottom for readability */}
       <div
         className="absolute inset-x-0 bottom-0 h-16 rounded-b-xl pointer-events-none"
         style={{
@@ -104,14 +105,43 @@ function ProjectRow({ project, index }) {
   const isInView = useInView(ref, { once: true, margin: '-80px' })
   const isEven = index % 2 === 0
 
+  // 3D tilt on hover
+  const rotateX = useMotionValue(0)
+  const rotateY = useMotionValue(0)
+  const springRotateX = useSpring(rotateX, { damping: 20, stiffness: 300 })
+  const springRotateY = useSpring(rotateY, { damping: 20, stiffness: 300 })
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+    rotateY.set((e.clientX - centerX) / rect.width * 6)
+    rotateX.set(-(e.clientY - centerY) / rect.height * 6)
+  }
+
+  const handleMouseLeave = () => {
+    rotateX.set(0)
+    rotateY.set(0)
+  }
+
   const visualVariant = {
-    hidden: { opacity: 0, x: isEven ? -50 : 50 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: 'easeOut' } },
+    hidden: { opacity: 0, x: isEven ? -60 : 60, filter: 'blur(8px)' },
+    visible: {
+      opacity: 1,
+      x: 0,
+      filter: 'blur(0px)',
+      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+    },
   }
 
   const textVariant = {
-    hidden: { opacity: 0, x: isEven ? 50 : -50 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: 'easeOut', delay: 0.1 } },
+    hidden: { opacity: 0, x: isEven ? 60 : -60, filter: 'blur(8px)' },
+    visible: {
+      opacity: 1,
+      x: 0,
+      filter: 'blur(0px)',
+      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.15 },
+    },
   }
 
   const tagStagger = {
@@ -120,8 +150,13 @@ function ProjectRow({ project, index }) {
   }
 
   const tagVariant = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
+    hidden: { opacity: 0, scale: 0.7, y: 10 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+    },
   }
 
   return (
@@ -131,11 +166,18 @@ function ProjectRow({ project, index }) {
       style={{
         background: 'rgba(255,255,255,0.02)',
         border: '1px solid rgba(255,255,255,0.07)',
+        perspective: '1000px',
+        rotateX: springRotateX,
+        rotateY: springRotateY,
+        transformStyle: 'preserve-3d',
       }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       whileHover={{
-        borderColor: 'rgba(124,58,237,0.2)',
-        background: 'rgba(255,255,255,0.03)',
-        transition: { duration: 0.3 },
+        borderColor: 'rgba(124,58,237,0.25)',
+        background: 'rgba(255,255,255,0.04)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.4), 0 0 30px rgba(124,58,237,0.1)',
+        transition: { duration: 0.4 },
       }}
     >
       <div className={`flex flex-col ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'} items-stretch`}>
@@ -147,7 +189,6 @@ function ProjectRow({ project, index }) {
           animate={isInView ? 'visible' : 'hidden'}
         >
           <div className="relative h-full min-h-[280px] lg:min-h-[380px]">
-            {/* Gradient backdrop behind the image */}
             <div
               className={`absolute inset-0 bg-gradient-to-br ${project.gradient} opacity-40`}
             />
@@ -167,7 +208,7 @@ function ProjectRow({ project, index }) {
           animate={isInView ? 'visible' : 'hidden'}
         >
           {/* Badge */}
-          <span
+          <motion.span
             className="inline-block self-start mb-3 text-xs font-mono px-3 py-1 rounded-full font-semibold"
             style={{
               background: `${project.accentColor}22`,
@@ -175,13 +216,17 @@ function ProjectRow({ project, index }) {
               color: project.accentColor,
               fontFamily: 'JetBrains Mono, monospace',
             }}
+            whileHover={{
+              scale: 1.05,
+              boxShadow: `0 0 15px ${project.accentColor}33`,
+            }}
           >
             {project.badge}
-          </span>
+          </motion.span>
 
           <h3
             className="font-display text-2xl font-bold text-slate-100 mb-2"
-            style={{ letterSpacing: '-0.01em' }}
+            style={{ letterSpacing: '-0.02em' }}
           >
             {project.title}
           </h3>
@@ -189,15 +234,21 @@ function ProjectRow({ project, index }) {
 
           {/* Highlights */}
           <ul className="space-y-2 mb-5">
-            {project.highlights.map((h) => (
-              <li key={h} className="flex items-start gap-2 text-sm text-slate-300">
+            {project.highlights.map((h, i) => (
+              <motion.li
+                key={h}
+                className="flex items-start gap-2 text-sm text-slate-300"
+                initial={{ opacity: 0, x: -10 }}
+                animate={isInView ? { opacity: 1, x: 0 } : {}}
+                transition={{ delay: 0.6 + i * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <CheckCircle
                   size={14}
                   className="flex-shrink-0 mt-0.5"
                   style={{ color: project.accentColor }}
                 />
                 {h}
-              </li>
+              </motion.li>
             ))}
           </ul>
 
@@ -231,7 +282,7 @@ function ProjectRow({ project, index }) {
               href={project.links.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200"
+              className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg"
               style={{
                 border: '1px solid rgba(255,255,255,0.1)',
                 color: '#94a3b8',
@@ -240,9 +291,11 @@ function ProjectRow({ project, index }) {
                 borderColor: 'rgba(124,58,237,0.4)',
                 color: '#f1f5f9',
                 background: 'rgba(124,58,237,0.1)',
-                scale: 1.02,
+                scale: 1.05,
+                boxShadow: '0 0 15px rgba(124,58,237,0.2)',
               }}
-              whileTap={{ scale: 0.97 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
             >
               <Github size={14} />
               GitHub ↗
@@ -254,8 +307,12 @@ function ProjectRow({ project, index }) {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg text-white"
                 style={{ background: 'linear-gradient(135deg, #7C3AED, #3B82F6)' }}
-                whileHover={{ scale: 1.02, boxShadow: '0 0 16px rgba(124,58,237,0.4)' }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: '0 0 20px rgba(124,58,237,0.4)',
+                }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
               >
                 <ExternalLink size={14} />
                 View Live

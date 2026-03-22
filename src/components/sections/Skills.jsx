@@ -115,58 +115,80 @@ function SkillCard({ category, data, index }) {
   return (
     <motion.div
       ref={ref}
-      className="rounded-2xl p-6 flex flex-col"
+      className="rounded-2xl p-6 flex flex-col relative overflow-hidden group"
       style={{
         background: 'rgba(255, 255, 255, 0.03)',
         border: '1px solid rgba(255, 255, 255, 0.08)',
         backdropFilter: 'blur(12px)',
         boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
       }}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, ease: 'easeOut', delay: index * 0.1 }}
+      initial={{ opacity: 0, y: 40, scale: 0.95 }}
+      animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+      transition={{
+        duration: 0.7,
+        ease: [0.16, 1, 0.3, 1],
+        delay: index * 0.12,
+      }}
       whileHover={{
-        y: -4,
+        y: -8,
         borderColor: `${data.accent}55`,
-        boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 20px ${data.accent}22`,
-        transition: { duration: 0.2 },
+        boxShadow: `0 16px 48px rgba(0,0,0,0.5), 0 0 30px ${data.accent}22`,
+        transition: { type: 'spring', stiffness: 300, damping: 20 },
       }}
     >
+      {/* Subtle gradient bg on hover */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+        style={{
+          background: `radial-gradient(circle at 50% 0%, ${data.accent}15 0%, transparent 70%)`,
+        }}
+      />
+
       {/* Category header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div
+      <div className="flex items-center gap-3 mb-6 relative z-10">
+        <motion.div
           className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ background: `${data.accent}22`, border: `1px solid ${data.accent}44` }}
+          whileHover={{
+            scale: 1.15,
+            rotate: 5,
+            boxShadow: `0 0 20px ${data.accent}33`,
+            transition: { type: 'spring', stiffness: 400, damping: 10 },
+          }}
         >
           <Icon size={20} style={{ color: data.accent }} />
-        </div>
+        </motion.div>
         <h3 className="font-display text-lg font-bold text-slate-100">{data.label}</h3>
       </div>
 
       {/* Skill rows */}
-      <div className="flex flex-col gap-2 flex-1">
+      <div className="flex flex-col gap-2 flex-1 relative z-10">
         {data.items.map((item, i) => {
           const renderIcon = skillIcons[item.iconKey]
 
           return (
             <motion.div
               key={item.name}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg group cursor-default transition-all duration-200"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg group/item cursor-default"
               style={{ borderLeft: '2px solid transparent' }}
               whileHover={{
                 background: `${data.accent}11`,
                 borderLeftColor: data.accent,
-                x: 4,
-                transition: { duration: 0.15 },
+                x: 6,
+                transition: { type: 'spring', stiffness: 400, damping: 15 },
               }}
-              initial={{ opacity: 0, x: -10 }}
+              initial={{ opacity: 0, x: -15 }}
               animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ delay: index * 0.1 + i * 0.05 + 0.3 }}
+              transition={{
+                delay: index * 0.12 + i * 0.06 + 0.3,
+                duration: 0.5,
+                ease: [0.16, 1, 0.3, 1],
+              }}
             >
               <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
                 {renderIcon ? renderIcon(item.iconColor) : <span style={{ color: item.iconColor }}>●</span>}
               </span>
-              <span className="text-sm text-slate-300 font-medium group-hover:text-slate-100 transition-colors duration-200">
+              <span className="text-sm text-slate-300 font-medium group-hover/item:text-slate-100 transition-colors duration-200">
                 {item.name}
               </span>
             </motion.div>
